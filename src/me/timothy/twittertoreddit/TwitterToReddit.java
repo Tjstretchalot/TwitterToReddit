@@ -151,12 +151,12 @@ public class TwitterToReddit {
 			System.out.println("  Unshortened: " + firstLink);
 			String realText = text.substring(0, matcher.start()).trim();
 			
-//			try {
-//				redditUser.submitLink(realText, firstLink, subreddit);
-//			} catch (IOException | ParseException e) {
-//				e.printStackTrace();
-//				System.exit(1);
-//			}
+			try {
+				redditUser.submitLink(realText, firstLink, subreddit);
+			} catch (IOException | ParseException e) {
+				e.printStackTrace();
+				System.exit(1);
+			}
 		}else {
 			System.out.println("  Failed to find link");
 		}
