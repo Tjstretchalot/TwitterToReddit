@@ -26,6 +26,8 @@ import twitter4j.DirectMessage;
 import twitter4j.StallWarning;
 import twitter4j.Status;
 import twitter4j.StatusDeletionNotice;
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
 import twitter4j.TwitterStream;
 import twitter4j.User;
 import twitter4j.UserList;
@@ -59,8 +61,15 @@ public class TwitterToReddit {
 			public void onStallWarning(StallWarning arg0) {}
 
 			@Override
-			public void onStatus(Status status) {
-				postTweet(status);
+			public void onStatus(final Status status) {
+				new Thread(new Runnable() {
+
+					@Override
+					public void run() {
+						postTweet(status);
+					}
+					
+				}).start();
 			}
 
 			@Override
@@ -142,12 +151,12 @@ public class TwitterToReddit {
 			System.out.println("  Unshortened: " + firstLink);
 			String realText = text.substring(0, matcher.start()).trim();
 			
-			try {
-				redditUser.submitLink(realText, firstLink, subreddit);
-			} catch (IOException | ParseException e) {
-				e.printStackTrace();
-				System.exit(1);
-			}
+//			try {
+//				redditUser.submitLink(realText, firstLink, subreddit);
+//			} catch (IOException | ParseException e) {
+//				e.printStackTrace();
+//				System.exit(1);
+//			}
 		}else {
 			System.out.println("  Failed to find link");
 		}

@@ -24,6 +24,11 @@ import java.util.Properties;
 import java.util.Scanner;
 
 import twitter4j.FilterQuery;
+import twitter4j.ResponseList;
+import twitter4j.Status;
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
+import twitter4j.TwitterFactory;
 import twitter4j.TwitterStream;
 import twitter4j.TwitterStreamFactory;
 
@@ -106,7 +111,6 @@ public class TwitterToRedditMain {
 	}
 	
 	private void loadConfiguration() {
-		LinkUnshortener.loadConfiguration();
 		File file = new File("user.ini");
 		if(!file.exists()) {
 			System.out.println("Please create user.ini that resembles:");

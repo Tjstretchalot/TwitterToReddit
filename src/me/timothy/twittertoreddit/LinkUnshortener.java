@@ -16,52 +16,37 @@
 */
 package me.timothy.twittertoreddit;
 
-import java.io.File;
-import java.io.FileReader;
-import java.net.URLEncoder;
-import java.util.Properties;
-
-import org.json.simple.JSONObject;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 import com.github.jreddit.utils.restclient.HttpRestClient;
-import com.github.jreddit.utils.restclient.methodbuilders.HttpGetMethodBuilder;
 
 public class LinkUnshortener {
-	public static String apiKey;
-	
+	/**
+	 * Only works for 301 redirects, which t.co always is
+	 * @param rClient
+	 * @param url
+	 * @return
+	 */
 	public static String unshorten(HttpRestClient rClient, String url) {
-		if(apiKey == null)
-			throw new RuntimeException("apiKey not loaded");
 		try {
-			String encUrl = URLEncoder.encode(url, "UTF-8");
-			String unshortenUrl = "http://api.unshorten.it?shortURL=" + encUrl + "&responseFormat=json&apiKey=" + apiKey;
-			JSONObject jObj = ((JSONObject) rClient.get(HttpGetMethodBuilder.httpGetMethod().withUrl(unshortenUrl)).getResponseObject());
-			return (String) jObj.get("fullurl");
-		}catch(Exception e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
-	public static void loadConfiguration() {
-		try {
-			File file = new File("unshortenit.ini");
-			if(!file.exists())
-				throw new RuntimeException("unshortenit.ini must exist and have apiKey");
+			HttpURLConnection con = (HttpURLConnection) (new URL(url).openConnection());
+			con.setInstanceFollowRedirects(false);
+			con.connect();
 			
-			Properties props = new Properties();
-			try(FileReader fr = new FileReader(file)) {
-				props.load(fr);
+			int responseCode = con.getResponseCode();
+			if(responseCode != 301) {
+				throw new IllegalArgumentException(url + " does not return 301 as expected");
 			}
 			
-			if(props.isEmpty() || !props.containsKey("apiKey"))
-				throw new RuntimeException("unshortenit.ini must exist and have apiKey");
+			String destinationUrl = con.getHeaderField("location");
+			con.disconnect();
+			return destinationUrl;
+		}catch(IOException ex) {
+			ex.printStackTrace();
 			
-			apiKey = props.getProperty("apiKey");
-		}catch(Exception e) {
-			if(e instanceof RuntimeException)
-				throw (RuntimeException) e;
-			throw new RuntimeException(e);
+			return null;
 		}
 	}
 }
